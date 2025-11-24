@@ -7,13 +7,6 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Send } from "lucide-react";
 
-interface ContactMessage {
-  id: string;
-  name: string;
-  email: string;
-  message: string;
-  timestamp: string;
-}
 
 const Index = () => {
   const { toast } = useToast();
@@ -24,7 +17,7 @@ const Index = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -39,32 +32,44 @@ const Index = () => {
       return;
     }
 
-    // Create message object
-    const newMessage: ContactMessage = {
-      id: Date.now().toString(),
-      name: formData.name,
-      email: formData.email,
-      message: formData.message,
-      timestamp: new Date().toISOString(),
-    };
+    try {
+      // Send to Web3Forms
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          access_key: "JOUW_WEB3FORMS_ACCESS_KEY_HIER", // Vervang dit met jouw Web3Forms Access Key
+          name: formData.name,
+          email: formData.email,
+          message: formData.message,
+        }),
+      });
 
-    // Get existing messages
-    const existingMessages = localStorage.getItem("quiztocht-messages");
-    const messages: ContactMessage[] = existingMessages ? JSON.parse(existingMessages) : [];
+      const result = await response.json();
 
-    // Add new message
-    messages.push(newMessage);
-    localStorage.setItem("quiztocht-messages", JSON.stringify(messages));
+      if (result.success) {
+        // Success feedback
+        toast({
+          title: "Bericht verzonden! ✓",
+          description: "We nemen zo snel mogelijk contact met je op.",
+        });
 
-    // Success feedback
-    toast({
-      title: "Bericht verzonden! ✓",
-      description: "We nemen zo snel mogelijk contact met je op.",
-    });
-
-    // Reset form
-    setFormData({ name: "", email: "", message: "" });
-    setIsSubmitting(false);
+        // Reset form
+        setFormData({ name: "", email: "", message: "" });
+      } else {
+        throw new Error("Verzenden mislukt");
+      }
+    } catch (error) {
+      toast({
+        title: "Er ging iets mis",
+        description: "Probeer het later opnieuw.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
