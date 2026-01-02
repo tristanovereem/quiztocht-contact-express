@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Send } from "lucide-react";
 
-
 const Index = () => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
@@ -21,7 +20,7 @@ const Index = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Validate
+    // Validatie
     if (!formData.name || !formData.email || !formData.message) {
       toast({
         title: "Vul alle velden in",
@@ -33,7 +32,7 @@ const Index = () => {
     }
 
     try {
-      // Send to Web3Forms
+      // Verstuur naar Web3Forms
       const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: {
@@ -50,13 +49,10 @@ const Index = () => {
       const result = await response.json();
 
       if (result.success) {
-        // Success feedback
         toast({
           title: "Bericht verzonden! ✓",
           description: "We nemen zo snel mogelijk contact met je op.",
         });
-
-        // Reset form
         setFormData({ name: "", email: "", message: "" });
       } else {
         throw new Error("Verzenden mislukt");
